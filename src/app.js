@@ -26,7 +26,7 @@ mongodb.connect(url, function(error, client) {
         client.close();
         console.log('Connexion BDD - Après fermeture de la connexion  à MongoDB', docs);
         getFromDB(sendToRoutes(docs));
-        console.log('>>> Connexion BDD - getFromDB has runned');
+        console.log('>>> Connexion BDD - getFromDB has ran');
         });
     });
 });
@@ -69,7 +69,7 @@ app.get('/resumes', function(request, response) {
     // response.send('----------- Resumes ------------'); // deprecated
     
     const resumes = toJson;
-    response.status(response.statusCode).send('----------- Resumes ------------');
+    // response.status(response.statusCode).send('----------- Resumes ------------');
     response.json(resumes[0]);
 });
 
