@@ -7,7 +7,7 @@ const config = require('./config/config.json');
 const app = express();
 
 // URL de connexion
-const url = 'mongodb://localhost:27017';
+const url = config.mongoUrl;
 
 // Nom BDD
 const dbName = 'resumeGen';
@@ -25,8 +25,8 @@ mongodb.connect(url, function(error, client) {
         console.log('Connexion BDD - Avant fermeture de la connexion à MongoDB', docs);
         client.close();
         console.log('Connexion BDD - Après fermeture de la connexion  à MongoDB', docs);
-        getFromBDD(sendToRoutes(docs));
-        console.log('>>> Connexion BDD - getFromBDD has runned');
+        getFromDB(sendToRoutes(docs));
+        console.log('>>> Connexion BDD - getFromDB has runned');
         });
     });
 });
@@ -54,7 +54,7 @@ const findDocuments = function(db, callback) {
     // Recuperation des documents de la collection
     const collection = db.collection('documents');
     // Retourner les documents
-    collection.find({b : 1}).toArray(function(error, docs) {
+    collection.find({b : 1}).toArray(function(error, docs) { // Voir pour retourner un seul doc
         assert.equal(error, null);
         console.log('---------------- Documents ------------------');
         console.log(docs);
@@ -69,7 +69,7 @@ app.get('/resumes', function(request, response) {
     // response.send('----------- Resumes ------------'); // deprecated
     
     const resumes = toJson;
-    //response.status(response.statusCode).send('----------- Resumes ------------');
+    response.status(response.statusCode).send('----------- Resumes ------------');
     response.json(resumes[0]);
 });
 
@@ -80,12 +80,12 @@ const sendToRoutes = function(results) {
     };
 };
 
-const getFromBDD = function (passResults) {
+const getFromDB = function (passResults) {
     toJson = passResults();
-    console.log('From getFromBDD: toJson =', toJson);
+    console.log('From getFromDB: toJson =', toJson);
 };
 
-let toJson;
+let toJson; // Pas forcement propre ?
 
 // Surveillance du port du serveur
 app.listen(config.port, function() {
