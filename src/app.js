@@ -1,7 +1,7 @@
-const express = require('express'); // import du module dans le fichier = permet d'appliquer les methodes dediees
-const mongodb = require('mongodb');
-const assert = require('assert');
-const config = require('./config/config.json');
+import express from 'express';
+import mongodb from 'mongodb';
+import assert from 'assert';
+import config from './config/config.json';
 
 // Serveur
 const app = express();
@@ -13,15 +13,15 @@ const url = config.mongoUrl;
 const dbName = 'resumeGen';
 
 // Connexion au serveur de BDD
-mongodb.connect(url, function(error, client) {
+mongodb.connect(url, (error, client) => {
     assert.equal(null, error);
     console.log('>>> Connection to mongoDB server successful <<<');
     console.log('');
 
     const db = client.db(dbName);
 
-    insertDocuments(db, function(docs) {
-        findDocuments(db, function(docs) {
+    insertDocuments(db, (docs) => {
+        findDocuments(db, (docs) => {
         console.log('Connexion BDD - Avant fermeture de la connexion à MongoDB', docs);
         client.close();
         console.log('Connexion BDD - Après fermeture de la connexion  à MongoDB', docs);
@@ -33,13 +33,13 @@ mongodb.connect(url, function(error, client) {
 
 //////// CRUD methodes ////////
 // Insertion de documents
-const insertDocuments = function(db, callback) {
+const insertDocuments = (db, callback) => {
     // Recuperation des documents de la collection
     const collection = db.collection('documents');
     // Insertion de documents
     collection.insertMany([
         {a : 1}, {a : 2}, {a : 2, b : 1}, {a : 3}
-    ], function(error, result) {
+    ], (error, result) => {
         assert.equal(error, null);
         assert.equal(4, result.result.n);
         assert.equal(4, result.ops.length);
@@ -50,11 +50,11 @@ const insertDocuments = function(db, callback) {
 };
 
 // Retourner tous les documents
-const findDocuments = function(db, callback) {
+const findDocuments = (db, callback) => {
     // Recuperation des documents de la collection
     const collection = db.collection('documents');
     // Retourner les documents
-    collection.find({b : 1}).toArray(function(error, docs) { // Voir pour retourner un seul doc
+    collection.find({b : 1}).toArray((error, docs) => { // Voir pour retourner un seul doc
         assert.equal(error, null);
         console.log('---------------- Documents ------------------');
         console.log(docs);
@@ -65,7 +65,7 @@ const findDocuments = function(db, callback) {
 //////////////////
 
 // Routes
-app.get('/resumes', function(request, response) {
+app.get('/resumes', (request, response) => {
     // response.send('----------- Resumes ------------'); // deprecated
     
     const resumes = toJson;
@@ -73,14 +73,14 @@ app.get('/resumes', function(request, response) {
     response.json(resumes[0]);
 });
 
-const sendToRoutes = function(results) {
+const sendToRoutes = (results) => {
     console.log('From sendToRoutes: results =', results);
-    return function() {
+    return () => {
         return results;
     };
 };
 
-const getFromDB = function (passResults) {
+const getFromDB = (passResults) => {
     toJson = passResults();
     console.log('From getFromDB: toJson =', toJson);
 };
@@ -88,8 +88,8 @@ const getFromDB = function (passResults) {
 let toJson; // Pas forcement propre ?
 
 // Surveillance du port du serveur
-app.listen(config.port, function() {
+app.listen(`${config.port}`, () => {
     console.log('');
-    console.log('>>> Express server running on config.port <<<');
+    console.log(`>>> Express server running on ${config.port} <<<`);
 });
 
