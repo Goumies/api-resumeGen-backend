@@ -10,26 +10,36 @@ const app = express();
 const url = config.mongoUrl;
 
 // Nom BDD
-const dbName = 'resumeGen';
+const dbName = config.dbName; // ajouter dans config
 
-// Connexion au serveur de BDD
-mongodb.connect(url, function(error, client) {
-    assert.equal(null, error);
-    console.log('>>> Connection to mongoDB server successful <<<');
+// BDD, declaration globale pour utilisation dans les routes
+let db;
+
+// Surveillance du port du serveur
+app.listen(config.port, function() {
     console.log('');
+    console.log('>>> Express server running on config.port <<<');
 
-    const db = client.db(dbName);
+    // Connexion au serveur de BDD
+    mongodb.connect(url, { useNewUrlParser: true }, function(error, client) { // new URL string parser
+        assert.equal(null, error);
+        console.log('>>> Connection to mongoDB server successful <<<');
+        console.log('');
 
-    insertDocuments(db, function(docs) {
+        db = client.db(dbName);
+
         findDocuments(db, function(docs) {
-        console.log('Connexion BDD - Avant fermeture de la connexion à MongoDB', docs);
-        client.close();
-        console.log('Connexion BDD - Après fermeture de la connexion  à MongoDB', docs);
-        getFromDB(sendToRoutes(docs));
-        console.log('>>> Connexion BDD - getFromDB has ran');
+            // console.log('Connexion BDD - Avant fermeture de la connexion à MongoDB', docs);
+            client.close();
+            //console.log('Connexion BDD - Après fermeture de la connexion  à MongoDB', docs);
+            getFromDB(sendToRoutes(docs));
+            console.log('>>> Connexion BDD - getFromDB has ran');
         });
     });
 });
+
+
+
 
 //////// CRUD methodes ////////
 // Insertion de documents
@@ -56,9 +66,9 @@ const findDocuments = function(db, callback) {
     // Retourner les documents
     collection.find({b : 1}).toArray(function(error, docs) { // Voir pour retourner un seul doc
         assert.equal(error, null);
-        console.log('---------------- Documents ------------------');
-        console.log(docs);
-        console.log('---------------------------------------------');
+        // console.log('---------------- Documents ------------------');
+        // console.log(docs);
+        // console.log('---------------------------------------------');
         callback(docs);
     });
 };
@@ -74,7 +84,7 @@ app.get('/resumes', function(request, response) {
 });
 
 const sendToRoutes = function(results) {
-    console.log('From sendToRoutes: results =', results);
+    // console.log('From sendToRoutes: results =', results);
     return function() {
         return results;
     };
@@ -82,14 +92,9 @@ const sendToRoutes = function(results) {
 
 const getFromDB = function (passResults) {
     toJson = passResults();
-    console.log('From getFromDB: toJson =', toJson);
+    // console.log('From getFromDB: toJson =', toJson);
 };
 
 let toJson; // Pas forcement propre ?
 
-// Surveillance du port du serveur
-app.listen(config.port, function() {
-    console.log('');
-    console.log('>>> Express server running on config.port <<<');
-});
 
