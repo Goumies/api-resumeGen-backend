@@ -1,6 +1,5 @@
 import express from 'express'; // import du module dans le fichier = permet d'appliquer les methodes dediees
 import mongoose from 'mongoose'; // plein d'helpers, lib + fournie
-import assert from 'assert';
 import config from './config/config.json';
 import bodyParser from 'body-parser'; // Pour recevoir les requetes post
 
@@ -44,7 +43,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Ajouter un CV
 app.post('/resumes/add', (requete, reponse, next) => {
-    console.log('>>>', requete.body.prenom);
     const newCV = new CV(requete.body);
 
     newCV.save((error, cv) => {
