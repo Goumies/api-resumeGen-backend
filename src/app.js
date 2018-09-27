@@ -2,7 +2,7 @@ import express from 'express'; // import du module dans le fichier = permet d'ap
 import mongoose from 'mongoose'; // plein d'helpers, lib + fournie
 import config from './config/config.json';
 
-import { CV, Competence, Experience, Formation, Loisir, Autre } from './model/cv';
+import CV/*, Competence, Experience, Formation, Loisir, Autre*/  from './model/cv';
 
 // Serveur
 const app = express();
@@ -31,59 +31,69 @@ Promise.all([server, connect]).then(results => {
     console.log('>>> Connection to mongoDB server successful <<<');
     database = mongoose.connection;
 
-// Ajouter un CV
-app.post('/resumes/add', (requete, reponse, next) => {
-    const newCV = new CV(requete.body);
+    // Ajouter un CV
+    app.post('/resumes/add', (requete, reponse, next) => {
+        const newCV = new CV({
+            prenom: requete.body.prenom,
+            nom: requete.body.nom,
+            poste: requete.body.poste,
+            nombreAnneesExperience: requete.body.nombreAnneesExperience,
+            competences: {
+                langages: requete.body.competences.langages
+            }
+        });
 
-    newCV.save((error, cv) => {
-        if (error) console.error(error);
-        reponse.json(cv);
+        console.log(newCV);
+
+        CV.save((error, cv) => {
+            if (error) console.error(error);
+            reponse.json(cv);
+        });
     });
-});
 
-// Recuperer tous les CVs
-app.get('/resumes', (requete, reponse, next) => {
+    // Recuperer tous les CVs
+    app.get('/resumes', (requete, reponse, next) => {
 
-    CV.find({}, (error, result) => {
-        reponse.json(result);
+        CV.find({}, (error, result) => {
+            reponse.json(result);
+        });
     });
-});
 
-// Recuperer un CV par id
-app.get('/resumes/resume/:id', (requete, reponse, next) => {
-    console.log('route get by id', requete.params.id);
-    // Recuperation de l'id de la requete
-    let id = requete.params.id;
+    // Recuperer un CV par id
+    app.get('/resumes/resume/:id', (requete, reponse, next) => {
+        console.log('route get by id', requete.params.id);
+        // Recuperation de l'id de la requete
+        let id = requete.params.id;
 
-    CV.find({ _id: id }, (error, result) => {
-        if (error) {
-            console.error(error);
-        };
-        reponse.json(result);
+        CV.find({ _id: id }, (error, result) => {
+            if (error) {
+                console.error(error);
+            };
+            reponse.json(result);
+        });
     });
-});
 
-// Modification
-app.post('/edit/:id', (requete, reponse) => {
-    let id = requete.params.id;
-    CV.findByIdAndUpdate({ _id: id }, requete.body, (error, cv) => {
-        if (error) {
-            reponse.send(error);
-        };
-        reponse.json(cv);
+    // Modification
+    app.post('/edit/:id', (requete, reponse) => {
+        let id = requete.params.id;
+        CV.findByIdAndUpdate({ _id: id }, requete.body, (error, cv) => {
+            if (error) {
+                reponse.send(error);
+            };
+            reponse.json(cv);
+        });
     });
-});
 
-// Suppression
-app.get('/delete/:id', (requete, reponse) => {
-    let id = requete.params.id;
-    CV.findOneAndRemove({ _id: id }, (error, cv) => {
-        if (error) {
-            reponse.send(error);
-        };
-        reponse.json(cv);
+    // Suppression
+    app.get('/delete/:id', (requete, reponse) => {
+        let id = requete.params.id;
+        CV.findOneAndRemove({ _id: id }, (error, cv) => {
+            if (error) {
+                reponse.send(error);
+            };
+            reponse.json(cv);
+        });
     });
-});
 
 }).catch(error => {
     console.error(error);

@@ -1,13 +1,15 @@
 import mongoose from'mongoose';
 
-import competence from './competence';
-import experience from './experience';
-import formation from './formation';
-import loisir from './loisir';
-import autre from './autre';
+import competence from './Competence';
+import experience from './Experience';
+import formation from './Formation';
+import loisir from './Loisir';
+import autre from './Autre';
 
 let competences, experiences, formations, autres, loisirs;
 competences = experiences =  formations =  autres =  loisirs = [];
+
+
 
 const Schema = mongoose.Schema;
 let NewCV = new Schema({
@@ -15,13 +17,12 @@ let NewCV = new Schema({
     nom: {type: String, required: true},
     poste: {type: String, required: true},
     nombreAnneesExperience: {type: Number, required: false},
-    children: [
-        competences,
-        experiences,
-        formations,
-        autres,
-        loisirs
-    ]
+    competences: competence.schema,
+    experiences: [experience.schema],
+    formations: [formation.schema],
+    autres: [autre.schema],
+    loisirs: [loisir.schema]
+    
 });
 
 export default mongoose.model('CV', NewCV);
