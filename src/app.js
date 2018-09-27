@@ -1,9 +1,8 @@
 import express from 'express'; // import du module dans le fichier = permet d'appliquer les methodes dediees
 import mongoose from 'mongoose'; // plein d'helpers, lib + fournie
 import config from './config/config.json';
-import bodyParser from 'body-parser'; // Pour recevoir les requetes post
 
-import CV/*, Competence, Experience, Formation, Loisir, Autre*/ from './model/cv';
+import { CV, Competence, Experience, Formation, Loisir, Autre } from './model/cv';
 
 // Serveur
 const app = express();
@@ -31,15 +30,6 @@ Promise.all([server, connect]).then(results => {
     console.log(`>>> Express server running on ${config.port} <<<`);
     console.log('>>> Connection to mongoDB server successful <<<');
     database = mongoose.connection;
-
-}).catch(error => {
-    console.error(error);
-});
-
-
-// Parametrage des requetes et reponses du serveur
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 // Ajouter un CV
 app.post('/resumes/add', (requete, reponse, next) => {
@@ -94,3 +84,13 @@ app.get('/delete/:id', (requete, reponse) => {
         reponse.json(cv);
     });
 });
+
+}).catch(error => {
+    console.error(error);
+});
+
+
+// Parametrage des requetes et reponses du serveur
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
