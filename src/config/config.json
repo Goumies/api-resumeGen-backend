@@ -4,6 +4,7 @@
     "port": 3000,
     "mongoUrl": "mongodb://localhost:27017/api-resumeGen",
     "dbName": "resumeGen",
+    "collectionName": "documents",
     "remoting": {
         "context": false,
         "rest": {

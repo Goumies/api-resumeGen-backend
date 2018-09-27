@@ -1,7 +1,11 @@
-const express = require('express'); // import du module dans le fichier = permet d'appliquer les methodes dediees
-const mongodb = require('mongodb');
-const assert = require('assert');
-const config = require('./config/config.json');
+import express from 'express'; // import du module dans le fichier = permet d'appliquer les methodes dediees
+import  mongoose from 'mongoose'; // plein d'helpers, lib + fournie
+import  objectID from 'mongoose';
+import  assert from 'assert';
+import  config from './config/config.json';
+import bodyParser from 'body-parser'; // Pour recevoir les requetes post
+
+import CV/*, Competence, Experience, Formation, Loisir, Autre*/ from './model/cv';
 
 // Serveur
 const app = express();
@@ -13,88 +17,79 @@ const url = config.mongoUrl;
 const dbName = config.dbName; // ajouter dans config
 
 // BDD, declaration globale pour utilisation dans les routes
-let db;
+let database;
 
 // Surveillance du port du serveur
-app.listen(config.port, function() {
+app.listen(config.port, () => {
     console.log('');
-    console.log('>>> Express server running on config.port <<<');
+    console.log(`>>> Express server running on ${config.port} <<<`);
 
     // Connexion au serveur de BDD
-    mongodb.connect(url, { useNewUrlParser: true }, function(error, client) { // new URL string parser
+    mongoose.connect(url, { useNewUrlParser: true }, (error, client) => { 
+        // connect retourne une pseudo promesse // useNewUrlParser =new URL string parser
         assert.equal(null, error);
         console.log('>>> Connection to mongoDB server successful <<<');
         console.log('');
 
-        db = client.db(dbName);
-
-        findDocuments(db, function(docs) {
-            // console.log('Connexion BDD - Avant fermeture de la connexion à MongoDB', docs);
-            client.close();
-            //console.log('Connexion BDD - Après fermeture de la connexion  à MongoDB', docs);
-            getFromDB(sendToRoutes(docs));
-            console.log('>>> Connexion BDD - getFromDB has ran');
-        });
+        database = mongoose.connection;
     });
 });
 
+// Parametrage des requetes et reponses du serveur
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
 
-
-
-//////// CRUD methodes ////////
-// Insertion de documents
-const insertDocuments = function(db, callback) {
-    // Recuperation des documents de la collection
-    const collection = db.collection('documents');
-    // Insertion de documents
-    collection.insertMany([
-        {a : 1}, {a : 2}, {a : 2, b : 1}, {a : 3}
-    ], function(error, result) {
-        assert.equal(error, null);
-        assert.equal(4, result.result.n);
-        assert.equal(4, result.ops.length);
-        console.log('');
-        console.log('>>> 4 documents insérés dans la collection');
-        callback(result);
-    });
-};
-
-// Retourner tous les documents
-const findDocuments = function(db, callback) {
-    // Recuperation des documents de la collection
-    const collection = db.collection('documents');
-    // Retourner les documents
-    collection.find({b : 1}).toArray(function(error, docs) { // Voir pour retourner un seul doc
-        assert.equal(error, null);
-        // console.log('---------------- Documents ------------------');
-        // console.log(docs);
-        // console.log('---------------------------------------------');
-        callback(docs);
-    });
-};
-//////////////////
-
-// Routes
-app.get('/resumes', function(request, response) {
-    // response.send('----------- Resumes ------------'); // deprecated
+// Ajouter un CV
+app.post('/resumes/add', (requete, reponse, next) => {
+    console.log('>>>', requete.body.prenom);
+    const newCV = new CV(requete.body);
     
-    const resumes = toJson;
-    // response.status(response.statusCode).send('----------- Resumes ------------');
-    response.json(resumes[0]);
+    newCV.save((error, cv) => {
+        if(error) console.error(error);
+        reponse.json(cv);
+    });
 });
 
-const sendToRoutes = function(results) {
-    // console.log('From sendToRoutes: results =', results);
-    return function() {
-        return results;
-    };
-};
+// Recuperer tous les CVs
+app.get('/resumes', (requete, reponse, next) => {
+    
+    CV.find({}, (error, result) => {
+        reponse.json(result);
+    }); 
+});
 
-const getFromDB = function (passResults) {
-    toJson = passResults();
-    // console.log('From getFromDB: toJson =', toJson);
-};
+// Recuperer un CV par id
+app.get('/resumes/resume/:id', (requete, reponse, next) => {
+    console.log('route get by id', requete.params.id);
+    // Recuperation de l'id de la requete
+    let id = requete.params.id;
+    
+    CV.find({_id: id}, (error, result) => { 
+        if (error) {
+            console.error(error);
+        };
+        reponse.json(result);
+    }); 
+});
 
-let toJson; // Pas forcement propre ?
+// Modification
+app.post('/edit/:id', (requete, reponse) => {
+    let id = requete.params.id;
+    CV.findByIdAndUpdate({_id: id}, requete.body, (error, cv) => {
+        if(error) {
+            reponse.send(error);
+        };
+        reponse.json(cv);
+    });
+});
 
-
+// Suppression
+app.get('/delete/:id', (requete, reponse) => {
+    let id = requete.params.id;
+    CV.findOneAndRemove({_id: id}, (error, cv) => {
+        if(error) {
+            reponse.send(error);
+        };
+        reponse.json(cv);
+    });
+});
