@@ -2,7 +2,7 @@ import mongoose from'mongoose';
 
 const Schema = mongoose.Schema;
 let NewCompetence = new Schema({
-    langages: {type: Array, required: false}, // new Schema Langage / Framework...
+    langages: {type: Array, required: false},
     frameworks: {type: Array, required: false},
     serveurs: {type: Array, required: false},
     sgbds: {type: Array, required: false},
