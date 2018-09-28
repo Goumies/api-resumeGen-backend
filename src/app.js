@@ -45,10 +45,16 @@ Promise.all([server, connect]).then(results => {
 
         console.log(newCV);
 
+        CV.create(newCV)
+        .then(cv => {
+            console.log('>>> Saved !');
+        });
+        /*
         CV.save((error, cv) => {
             if (error) console.error(error);
             reponse.json(cv);
         });
+        */
     });
 
     // Recuperer tous les CVs
