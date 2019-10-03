@@ -13,12 +13,12 @@ const url = config.mongoUrl;
 const dbName = 'resumeGen';
 
 // Connexion au serveur de BDD
-mongodb.connect(url, (error, client) => {
-    assert.equal(null, error);
+mongodb.connect(url, { useNewUrlParser: true }, (error, client) => {
+    assert.strictEqual(null, error);
     console.log('>>> Connection to mongoDB server successful <<<');
     console.log('');
 
-    const db = client.db(dbName);
+    const db = client.db(dbName, { useUnifiedTopology: true });
 
     insertDocuments(db, (docs) => {
         findDocuments(db, (docs) => {
@@ -26,7 +26,9 @@ mongodb.connect(url, (error, client) => {
         client.close();
         console.log('Connexion BDD - Après fermeture de la connexion  à MongoDB', docs);
         getFromDB(sendToRoutes(docs));
-        console.log('>>> Connexion BDD - getFromDB has runned');
+
+        console.log('');
+        console.log('>>> Connexion BDD - getFromDB has ran');
         });
     });
 });
@@ -40,9 +42,9 @@ const insertDocuments = (db, callback) => {
     collection.insertMany([
         {a : 1}, {a : 2}, {a : 2, b : 1}, {a : 3}
     ], (error, result) => {
-        assert.equal(error, null);
-        assert.equal(4, result.result.n);
-        assert.equal(4, result.ops.length);
+        assert.strictEqual(error, null);
+        assert.strictEqual(4, result.result.n);
+        assert.strictEqual(4, result.ops.length);
         console.log('');
         console.log('>>> 4 documents insérés dans la collection');
         callback(result);
@@ -55,7 +57,7 @@ const findDocuments = (db, callback) => {
     const collection = db.collection('documents');
     // Retourner les documents
     collection.find({b : 1}).toArray((error, docs) => { // Voir pour retourner un seul doc
-        assert.equal(error, null);
+        assert.strictEqual(error, null);
         console.log('---------------- Documents ------------------');
         console.log(docs);
         console.log('---------------------------------------------');
